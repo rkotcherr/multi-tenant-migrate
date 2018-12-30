@@ -1,0 +1,69 @@
+const Sequelize = require('sequelize');
+const Schema = require('validate');
+const path = require('path');
+
+const ConfigFileFormat = require('./schemas/ConfigFileFormat');
+const MapperTable = require('./models/MapperTable');
+const MigrationsTable = require('./models/MigrationsTable');
+
+const Arguments = new Schema({
+  schema: { required: true, message: 'Missing argument "schema=<String>"' },
+  domain: { required: true, message: 'Missing argument "domain=<String>"' },
+  config: { required: true, message: 'Missing argument "config=<String>"' }
+});
+
+const args = process.argv
+  .slice(2)
+  .map(arg => arg.split('='))
+  .reduce((args, [value, key]) => {
+    args[value] = key;
+    return args;
+  }, {});
+
+const argErrors = Arguments.validate(args);
+if (argErrors.length > 0) {
+  console.log(argErrors[0].message);
+  process.exit(1);
+}
+
+try {
+  const config = require(path.join(process.cwd(), args.config));
+
+  const configErrors = ConfigFileFormat.validate(config);
+  if (configErrors.length > 0) {
+    console.log(configErrors[0].message);
+    process.exit(1);
+  }
+
+  // Connect to database
+  const sequelize = new Sequelize(
+    config.dbName,
+    config.dbUser,
+    config.dbPassword,
+    {
+      host: config.dbHost,
+      dialect: 'postgres',
+      port: config.dbPort
+    }
+  );
+
+  const mapperTable = MapperTable(sequelize, config.tenantMapperTableName);
+  const migrationsTable = MigrationsTable(sequelize, config.migrationsTableName, args.schema);
+
+  async function createTables() {
+    await sequelize.queryInterface.createSchema(args.schema);
+
+    await sequelize.sync();
+
+    await mapperTable.create({
+      schema: args.schema,
+      domain: args.domain
+    });
+  }
+
+  createTables().then(() => process.exit(0));
+
+} catch (e) {
+  console.log(e);
+  process.exit(1);
+}
