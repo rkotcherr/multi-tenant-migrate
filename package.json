@@ -3,6 +3,10 @@
   "version": "1.0.6",
   "main": "index.js",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rkotcherr/multi-tenant-migrate"
+  },
   "dependencies": {
     "ascii-progress": "^1.0.5",
     "async": "^2.6.1",
