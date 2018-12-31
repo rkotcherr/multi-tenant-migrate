@@ -24,6 +24,9 @@ setup(RequireConfig)
     // One for "initializing", and one for "done".
     progressOptions['total'] = options.migrations.length + 2;
 
+    // The tenant manager is a closure that encapsulates a child migration worker
+    // and the progress bar that displays its progress. There is one for each tenant and
+    // one for the migrating the public schema.
     function getTenantManager(tenant) {
       const bar = new ProgressBar(progressOptions);
 
@@ -38,7 +41,7 @@ setup(RequireConfig)
         bar.tick(1, { id: nextId.substr(0, 36) });
       }
 
-      // Set this so everything immediately goes to the top
+      // Set this so everything immediately goes to the top. (The remaining "-'s are truncated.)
       setCurrentMigration('initializing' + '-'.repeat(100));
 
       function setError() {
@@ -47,6 +50,7 @@ setup(RequireConfig)
         bar.tick(0, { id: errorId.substr(0, 36) });
       }
 
+      // Forks a child, starts the migrations
       function runMigrations() {
         child = fork(childPath, process.argv);
         child.send({ schema: tenant.schema, direction: 'up' });
@@ -76,7 +80,6 @@ setup(RequireConfig)
       }
 
       function kill() {
-        // Fail gracefully (even though user "should" be working with transactions)
         child.kill();
       }
 
