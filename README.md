@@ -1,4 +1,6 @@
-⚠️  This library is currently in active development. You could probably use it in your project, but there are clear feature gaps at the moment. I don't have a ton of free time, so pull requests are very welcome! ⚠️
+⚠️ ⚠️ ⚠️
+**This library is currently in active development. You could probably use it in your project, but there are clear feature gaps at the moment. I don't have a ton of free time, so pull requests are very welcome!**
+⚠️ ⚠️ ⚠️
 
 # What is multi-tenancy?
 
