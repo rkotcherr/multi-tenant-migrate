@@ -215,8 +215,14 @@ process.on('message', args => {
         const migrationFile = require(fullpath);
 
         runAndSaveOneMigrationAsTransaction(filename, options, schema)
-          .then(() => callback(null, true))
-          .catch(err => callback(err));
+          .then(() => {
+            console.log('-------> ' + schema);
+            callback(null, true);
+          })
+          .catch(err => {
+            console.log('xxxxxxxx> ' + schema);
+            callback(err)
+          });
       } else {
         callback(null, true);
       }
@@ -228,7 +234,7 @@ process.on('message', args => {
         };
         process.send({ error });
       } else {
-        process.send({ currentMigration: 'done' });
+        process.send({ currentMigration: 'complete' });
         process.exit(0);
       }
     });

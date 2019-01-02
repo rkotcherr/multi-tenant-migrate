@@ -1,4 +1,5 @@
 const _ = require('underscore');
+const AsyncLock = require('async-lock');
 const Sequelize = require('sequelize');
 const path = require('path');
 const ProgressBar = require('ascii-progress');
@@ -8,11 +9,22 @@ const fork = require('child_process').fork;
 const Options = require('./models/Options');
 const CHILD_PATH = path.join(__dirname, './workers/MigrationWorker');
 
+const MAX_PARALLEL_WORKERS = 3;
+const RESOURCE_KEY = '1546470477261';
+
+const lock = new AsyncLock();
+
 const progressOptions = {
   tough: true,
   schema: ':id ╢:bar╟ :current/:total :percent :elapseds',
   blank: '░',
   filled: '█'
+};
+
+const CHILD_STATES = {
+  PENDING: 1,
+  RUNNING: 2,
+  COMPLETE: 3
 };
 
 // Parse command line arguments to pass to Options.load
@@ -24,13 +36,31 @@ const args = process.argv
     return args;
   }, {});
 
+function onError(err) {
+  throw new Error(err);
+  process.exit(1);
+}
+
 Options.load(args, async (err, options) => {
-  if (err) {
-    console.log(err);
-    exit(1);
-  }
+  err && onError(err);
 
   const managerPool = [];
+
+  // Check the pool of managers for the first pending one and run it.
+  function runNextPendingManager() {
+    lock.acquire(RESOURCE_KEY, function(done) {
+      const pendingMigrationManagers = _.reject(managerPool, manager => {
+        return manager.getState() !== CHILD_STATES.PENDING;
+      });
+
+      if (pendingMigrationManagers.length === 0) {
+        process.exit(0);
+      } else {
+        pendingMigrationManagers[0].runMigrations();
+        setTimeout(() => done(), 100);
+      }
+    }, err => err && onError(err));
+  }
 
   // The tenant manager is a closure that encapsulates a child migration worker
   // and the progress bar that displays its progress. There is one for each tenant and
@@ -38,10 +68,11 @@ Options.load(args, async (err, options) => {
   function getTenantManager(tenant) {
     let child = null;
     let currentMigrationId = null;
-    let exited = false;
+
+    let state = CHILD_STATES.PENDING;
 
     // There are 2 more progress bar positions than the number of migrations.
-    // One for "initializing", and one for "done".
+    // One for "pending", and one for "completed".
     const bar = new ProgressBar(_.extend(progressOptions, {
       total: options.migrations.length + 2
     }));
@@ -54,7 +85,7 @@ Options.load(args, async (err, options) => {
     }
 
     // Set this so everything immediately goes to the top. (The remaining "-'s are truncated.)
-    setCurrentMigration('initializing' + '-'.repeat(100));
+    setCurrentMigration('pending' + '-'.repeat(100));
 
     function setError() {
       bar.setSchema(':id ╢:bar.red╟ :current/:total :percent :elapseds',);
@@ -64,8 +95,11 @@ Options.load(args, async (err, options) => {
 
     // Forks a child, starts the migrations
     function runMigrations() {
+      state = CHILD_STATES.RUNNING;
+
       child = fork(CHILD_PATH, process.argv);
       child.send({ schema: tenant.schema, direction: 'up' });
+
       child.on('message', message => {
         if (message.error) {
           setError();
@@ -74,20 +108,15 @@ Options.load(args, async (err, options) => {
           managerPool.forEach(tenantManager => tenantManager.kill());
 
           // Display the entire error to the user.
-          console.log();
-          console.log(message.error);
-          console.log();
+          throw new Error(message.error);
         } else {
           setCurrentMigration(message.currentMigration);
         }
       });
 
       child.on('exit', () => {
-        exited = true;
-
-        if (_.every(managerPool, tenantManager => !tenantManager.isRunning())) {
-          process.exit(0);
-        }
+        state = CHILD_STATES.COMPLETE;
+        runNextPendingManager();
       });
     }
 
@@ -98,15 +127,15 @@ Options.load(args, async (err, options) => {
     // For some reason, even after child processes exit the parent thread continues
     // running. Ideally it would just end, but for now, on each exit we'll just check
     // to see if all others have finished, and if so, kill the parent process.
-    function isRunning() {
-      return !exited;
+    function getState() {
+      return state;
     }
 
     return {
       getName: () => tenant.schema,
       runMigrations: runMigrations,
       kill: kill,
-      isRunning: isRunning
+      getState: getState,
     }
   }
 
@@ -121,5 +150,8 @@ Options.load(args, async (err, options) => {
 
   clear();
   tenants.forEach(tenant => managerPool.push(getTenantManager(tenant)));
-  managerPool.forEach(tenantManager => tenantManager.runMigrations());
+
+  // Start migrations on first MAX_PARALLEL_WORKERS workers. When they finish, the
+  // pool will be checked for more pending workers.
+  _.first(managerPool, MAX_PARALLEL_WORKERS).forEach(manager => manager.runMigrations());
 });
