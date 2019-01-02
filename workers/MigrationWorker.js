@@ -4,9 +4,9 @@ const Sequelize = require('sequelize');
 const eachSeries = require('async').eachSeries;
 const path = require('path');
 
-const setup = require('../_setup');
 const RequireConfig = require('../schemas/RequireConfig');
 const MigrationsTable = require('../models/MigrationsTable');
+const Options = require('../models/Options');
 
 const TRANSACTION_OPTIONS = {
   isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
@@ -173,7 +173,20 @@ process.on('message', args => {
   const schema = args.schema;
   const direction = args.direction;
 
-  setup(RequireConfig).then(async options => {
+  const clargs = process.argv
+    .slice(2)
+    .map(arg => arg.split('='))
+    .reduce((args, [value, key]) => {
+      args[value] = key;
+      return args;
+    }, {});
+
+  Options.load(clargs, async (err, options) => {
+    if (err) {
+      console.log(err);
+      exit(1);
+    }
+
     const isPublicHandler = options.config.publicSchemaDisplayName === schema;
 
     // Creates public migration table if that doesn't exist
