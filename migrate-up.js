@@ -29,7 +29,7 @@ const CHILD_STATES = {
 };
 
 const DEVELOPER_WARNING = `
-Hopefully you've see the warning in the README file: This code is in active
+Hopefully you've seen the warning in the README file: This code is in active
 development and there may be unforseen issues. That said, I'd be delighted
 to have you join me in developing this library!
 
