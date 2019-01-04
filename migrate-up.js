@@ -117,7 +117,7 @@ Options.load(args, async (err, options) => {
       // an error, or if there is a new migration file being worked on.
       child.on('message', message => {
         if (message.error) {
-          managerPool.forEach(tenantManager => tenantManager.kill());
+          console.log(`Error from child migration: ${ message.error.message }`.underline.yellow);
           setErrorOnProgressBar();
           setGeneralError(message.error);
         } else {

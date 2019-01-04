@@ -79,11 +79,13 @@ function load(args, callback) {
         process.exit(1);
       }
 
+      const migrations = _.sortBy(items, item => item);
+
       callback(null, {
         args,
         sequelize,
         config,
-        migrations: items
+        migrations
       });
     });
   } catch (e) {

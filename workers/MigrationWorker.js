@@ -37,21 +37,33 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
       function getQueryInterface(schema) {
         const _queryInterface = options.sequelize.getQueryInterface();
         const _options = { transaction };
+        const _publicDisplayName = options.config.publicSchemaDisplayName;
 
-        if (options.config.publicSchemaDisplayName !== schema) {
+        if (_publicDisplayName !== schema) {
           _options['schema'] = schema;
         }
 
         function addColumn(tableName, attribute, options={}) {
+          let firstArgument = tableName;
 
-          // NOTE: purposefully adding _options _before_ options, in the off-chance somebody
-          // needs to override the transaction or schema. I can't think of any reason that'd
-          // be necessary right now but ¯\_(ツ)_/¯
-          return _queryInterface.addColumn(tableName, attribute, _.extend(_options, options))
+          if (_publicDisplayName !== schema) {
+            firstArgument = {
+              'tableName': tableName,
+              'schema': schema
+            }
+          }
+
+          return _queryInterface.addColumn(firstArgument, attribute, options)
         }
 
         function addConstraint(tableName, attribute, options={}) {
-          return _queryInterface.addConstraint(tableName, attribute, _.extend(_options, options));
+          let firstArgument = tableName;
+
+          if (_publicDisplayName !== schema) {
+            firstArgument = `"${ schema }"."${ tableName }"`;
+          }
+
+          return _queryInterface.addConstraint(firstArgument, attribute, options);
         }
 
         function addIndex(tableName, options={}) {
