@@ -150,7 +150,7 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
         }
 
         function renameTable(before, after, options) {
-          throw new Error('upsert() has not yet been implemented in queryInterface wrapper.');
+          throw new Error('renameTable() has not yet been implemented in queryInterface wrapper.');
         }
 
         function upsert() {
