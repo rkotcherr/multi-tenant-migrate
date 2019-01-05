@@ -179,5 +179,12 @@ Options.load(args, async (err, options) => {
 
   // Start migrations on first MAX_PARALLEL_WORKERS workers. When they finish, the
   // pool will be checked for more pending workers.
-  _.first(managerPool, MAX_PARALLEL_WORKERS).forEach(manager => manager.forkMigrationWorker());
+  lock.acquire(RESOURCE_KEY, function(done) {
+    _.first(managerPool, MAX_PARALLEL_WORKERS).forEach(manager => {
+      manager.setState(CHILD_STATES.RUNNING);
+      manager.forkMigrationWorker();
+    });
+
+    done();
+  });
 });
