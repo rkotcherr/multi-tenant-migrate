@@ -35,12 +35,23 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
       //
       // http://docs.sequelizejs.com/class/lib/query-interface.js
       function getQueryInterface(schema) {
+        const _query = options.sequelize.query;
         const _queryInterface = options.sequelize.getQueryInterface();
         const _options = { transaction };
         const _publicDisplayName = options.config.publicSchemaDisplayName;
 
         if (_publicDisplayName !== schema) {
           _options['schema'] = schema;
+        }
+
+        function _verboseTableName(tableName) {
+          let name = tableName;
+
+          if (_publicDisplayName !== schema) {
+            name = `"${ schema }"."${ tableName }"`;
+          }
+
+          return name;
         }
 
         function addColumn(tableName, attribute, options={}) {
@@ -57,17 +68,11 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
         }
 
         function addConstraint(tableName, attribute, options={}) {
-          let firstArgument = tableName;
-
-          if (_publicDisplayName !== schema) {
-            firstArgument = `"${ schema }"."${ tableName }"`;
-          }
-
-          return _queryInterface.addConstraint(firstArgument, attribute, options);
+          return _queryInterface.addConstraint(_verboseTableName(tableName), attribute, options);
         }
 
         function addIndex(tableName, options={}) {
-          return _queryInterface.addIndex(tableName, _.extend(_options, options));
+          return _queryInterface.addIndex(_verboseTableName(tableName), _.extend(_options, options));
         }
 
         function bulkDelete() {
@@ -80,7 +85,7 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
 
         function changeColumn(tableName, attributeName, dataTypeOrOptions, options) {
           return _queryInterface.changeColumn(
-            tableName,
+            _verboseTableName(tableName),
             attributeName,
             dataTypeOrOptions,
             _.extend(_options, options)
@@ -100,12 +105,16 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
         }
 
         function dropTable(tableName, options) {
+          if (_publicDisplayName !== schema) {
+            _options['schema'] = schema;
+          }
+
           return _queryInterface.dropTable(tableName, _.extend(_options, options));
         }
 
         function removeColumn(tableName, attributeName, options) {
           return _queryInterface.removeColumn(
-            tableName,
+            _verboseTableName(tableName),
             attributeName,
             _.extend(_options, options)
           );
@@ -113,7 +122,7 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
 
         function removeConstraint(tableName, constraintName, options) {
           return _queryInterface.removeConstraint(
-            tableName,
+            _verboseTableName(tableName),
             constraintName,
             _.extend(_options, options)
           );
@@ -121,7 +130,7 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
 
         function removeIndex(tableName, indexNameOrAttributes, options) {
           return _queryInterface.removeIndex(
-            tableName,
+            _verboseTableName(tableName),
             indexNameOrAttributes,
             _.extend(_options, options)
           );
@@ -129,7 +138,7 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
 
         function renameColumn(tableName, attrNameBefore, attrNameAfter, options) {
           return _queryInterface.renameColumn(
-            tableName,
+            _verboseTableName(tableName),
             attrNameBefore,
             attrNameAfter,
             _.extend(_options, options)
@@ -141,7 +150,7 @@ async function runAndSaveOneMigrationAsTransaction(filename, options, schema) {
         }
 
         function renameTable(before, after, options) {
-          return _queryInterface.renameTable(before, after, _.extend(_options, options));
+          throw new Error('upsert() has not yet been implemented in queryInterface wrapper.');
         }
 
         function upsert() {
