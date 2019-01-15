@@ -24,7 +24,7 @@ const ConfigFileFormat = require('../schemas/ConfigFileFormat');
  *
  * @see  migrate-up.js
  */
-function load(args, callback) {
+async function load(args, callback) {
   try {
     if (!args.config) {
       console.log('You must provide argument config=<Path>');
@@ -71,6 +71,8 @@ function load(args, callback) {
       createdAt: { allowNull: false, type: Sequelize.DATE },
       updatedAt: { allowNull: false, type: Sequelize.DATE }
     });
+
+    await sequelize.sync();
 
     const migrationsPath = path.join(process.cwd(), config.migrationsDirectory);
     fs.readdir(migrationsPath, function(err, items) {
