@@ -1,5 +1,5 @@
-const MigrationsTable = require('./models/MigrationsTable');
+const MapperTable = require('./models/MapperTable');
 
 module.exports = {
-  MigrationsTable: MigrationsTable
+  MapperTable: MapperTable
 };

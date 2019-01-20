@@ -121,7 +121,6 @@ const MapperTable = require('multi-tenant-migrate').MapperTable;
 
 From there, you may want to use the `req.headers.host` to do lookup in this table.
 
-
 # Feature wish-list:
 1. Migrate down (and optionally specify a tenant and number of steps)
 2. Migrate status (visualize which step each tenant is currently at)
