@@ -105,6 +105,23 @@ Specifically, the above command:
 ![Running a migration](https://i.imgur.com/5n6wSZJ.png)
 _A sample migration: all tenants have been migrated and the public schema is completing step 4 of 6._
 
+# Accessing the Mapper from application
+
+You may want to import the MapperTable model from your application. You can do this via:
+
+```
+import { MapperTable } from 'multi-tenant-migrate';
+```
+
+or
+
+```
+const MapperTable = require('multi-tenant-migrate').MapperTable;
+```
+
+From there, you may want to use the `req.headers.host` to do lookup in this table.
+
+
 # Feature wish-list:
 1. Migrate down (and optionally specify a tenant and number of steps)
 2. Migrate status (visualize which step each tenant is currently at)
