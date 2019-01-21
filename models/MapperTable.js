@@ -12,6 +12,11 @@ module.exports = function(sequelize, tableName) {
       allowNull: false,
       unique: true
     },
+    name: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: false
+    },
     schema: {
       type: Sequelize.STRING,
       allowNull: false,

@@ -7,8 +7,9 @@ const MapperTable = require('./models/MapperTable');
 const MigrationsTable = require('./models/MigrationsTable');
 
 const Arguments = new Schema({
-  schema: { required: true, message: 'Missing argument "schema=<String>"' },
   domain: { required: true, message: 'Missing argument "domain=<String>"' },
+  name: { required: true, message: 'Missing argument "name=<String>"' },
+  schema: { required: true, message: 'Missing argument "schema=<String>"' },
   config: { required: true, message: 'Missing argument "config=<String>"' }
 });
 
@@ -56,8 +57,9 @@ try {
     await sequelize.sync();
 
     await mapperTable.create({
+      domain: args.domain,
+      name: args.name,
       schema: args.schema,
-      domain: args.domain
     });
   }
 
