@@ -91,7 +91,7 @@ Now that you're setup, you can use `multi-tenant-migrate`:
 
 **create.js**: Creates a new tenant.
 
-`node ./node_modules/multi-tenant-migrate/create.js config=<STRING> schema=<STRING> domain=<STRING>`
+`node ./node_modules/multi-tenant-migrate/create.js config=<STRING> schema=<STRING> domain=<STRING> name=<NAME>`
 
 Specifically, the above command:
   1. Adds this tenant to "public"."tenantMapperTableName"
