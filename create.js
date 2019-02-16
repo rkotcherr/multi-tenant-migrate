@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const Schema = require('validate');
 const path = require('path');
+const uuid = require('uuidv4');
 
 const ConfigFileFormat = require('./schemas/ConfigFileFormat');
 const MapperTable = require('./models/MapperTable');
@@ -57,6 +58,7 @@ try {
     await sequelize.sync();
 
     await mapperTable.create({
+      id: uuid(),
       domain: args.domain,
       name: args.name,
       schema: args.schema,

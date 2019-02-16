@@ -3,9 +3,10 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, tableName) {
   return sequelize.define(tableName, {
     id: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.UUID,
       primaryKey: true,
-      autoIncrement: true
+      defaultValue: Sequelize.UUIDV4,
+      allowNull: false
     },
     domain: {
       type: Sequelize.STRING,
