@@ -163,7 +163,7 @@ Options.load(args, async (err, options) => {
     }
   }
 
-  const tenants = await options.sequelize.models.tenants.findAll({ raw: true });
+  const tenants = await options.sequelize.models[options.config.tenantMapperTableName].findAll({ raw: true });
   tenants.unshift({
     id: 0,
     schema: options.config.publicSchemaDisplayName,
