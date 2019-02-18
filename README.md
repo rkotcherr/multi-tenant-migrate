@@ -20,10 +20,6 @@ We recommend installing `multi-tenant-migrate` globally:
 
 `npm i -g multi-tenant-migrate`
 
-Or if you're using [yarn](https://yarnpkg.com/lang/en/docs/cli/global):
-
-`yarn global add multi-tenant-migrate`
-
 # Setup
 
 Refer to the following directory structure throught these docs:

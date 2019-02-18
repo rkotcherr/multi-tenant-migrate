@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const _ = require('underscore');
 const AsyncLock = require('async-lock');
 const colors = require('colors');

@@ -1,12 +1,13 @@
 {
   "name": "multi-tenant-migrate",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "main": "index.js",
   "license": "MIT",
   "bin": {
     "mtm-create": "./create.js",
     "mtm-migrate": "./migrate.js"
   },
+  "preferGlobal": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/rkotcherr/multi-tenant-migrate"
@@ -17,6 +18,8 @@
     "async-lock": "^1.1.3",
     "clear": "^0.1.0",
     "colors": "^1.3.3",
+    "global": "^4.3.2",
+    "multi-tenant-migrate": "^2.1.0",
     "pg": "^7.7.1",
     "sequelize": "^4.41.2",
     "underscore": "^1.9.1",

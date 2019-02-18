@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const Sequelize = require('sequelize');
 const Schema = require('validate');
 const path = require('path');
