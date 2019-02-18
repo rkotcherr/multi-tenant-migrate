@@ -14,6 +14,16 @@ This library is inspired by, but still clearly currently inferior to Django's po
 
 Because it is schema-based, you must currently be using a Postgres database. I am not familiar with every database, but am open to supporting other databases where relevant.
 
+# Installation
+
+We recommend installing `multi-tenant-migrate` globally:
+
+`npm i -g multi-tenant-migrate`
+
+Or if you're using [yarn](https://yarnpkg.com/lang/en/docs/cli/global):
+
+`yarn global add multi-tenant-migrate`
+
 # Setup
 
 Refer to the following directory structure throught these docs:
@@ -93,6 +103,10 @@ Now that you're setup, you can use `multi-tenant-migrate`:
 
 `node ./node_modules/multi-tenant-migrate/create.js config=<STRING> schema=<STRING> domain=<STRING> name=<NAME>`
 
+Or if installed globally using `npm i -g multi-tenant-migrate`:
+
+`mtm-create config=<STRING> schema=<STRING> domain=<STRING> name=<NAME>`
+
 Specifically, the above command:
   1. Adds this tenant to "public"."tenantMapperTableName"
   2. Creates the schema in the database
@@ -100,7 +114,11 @@ Specifically, the above command:
 
 **migrate-up.js**: For every schema in the mapper table, runs all outstanding tenant:* migrations (in alphabetical order). For the public schema, runs all outstanding public:* migrations.
 
-`node ./node_modules/multi-tenant-migrate/migrate-up.js config=<STRING>`
+`node ./node_modules/multi-tenant-migrate/migrate.js config=<STRING>`
+
+Or if installed globally using `npm i -g multi-tenant-migrate`:
+
+`mtm-migrate config=<STRING>`
 
 ![Running a migration](https://i.imgur.com/5n6wSZJ.png)
 _A sample migration: all tenants have been migrated and the public schema is completing step 4 of 6._
